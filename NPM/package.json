@@ -1,0 +1,16 @@
+{
+  "name": "tsbinddotnet",
+  "version": "1.0.6",
+  "description": "https://github.com/pandepic/TSBind.Net",
+  "main": "index.js",
+  "bin": {
+    "tsbinddotnet": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "https://github.com/pandepic",
+  "license": "MIT"
+}

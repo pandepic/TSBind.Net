@@ -1,0 +1,41 @@
+﻿export class PostResponse<T> {
+    public success: boolean = false;
+    public body?: T = undefined;
+}
+
+export class APIService {
+    public static Post<T>(endpoint: string, params: any, callback: ((result: PostResponse<T>) => void) | null = null, errorCallback: ((error: any) => void) | null = null): void {
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(params)
+        };
+
+        let result = new PostResponse<T>();
+        const apiURL = process.env.REACT_APP_API_URL;
+
+        fetch(apiURL + endpoint, options)
+            .then(response => {
+                if (response.status == 200) {
+                    result.success = true;
+                    result.body = response.json() as T;
+                } else {
+                    result.success = false;
+                }
+
+                if (callback != null) {
+                    callback(result);
+                }
+            })
+            .catch(error => {
+                //console.error(error);
+                result.success = false;
+                
+                if (errorCallback != null) {
+                    errorCallback(error);
+                }
+            });
+    }
+}

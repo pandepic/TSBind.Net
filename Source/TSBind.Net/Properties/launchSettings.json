@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TypeScriptifyDotNet": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    }
+  }
+}

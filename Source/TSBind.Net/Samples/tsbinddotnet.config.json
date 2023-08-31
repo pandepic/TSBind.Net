@@ -1,0 +1,12 @@
+{
+  "Inputs": [
+    "Path\\To\\WebAPI\\Project"
+  ],
+  "Outputs": [
+    "output.ts"
+  ],
+  "GeneralTemplatePath": "Templates\\general.txt",
+  "APIControllerTemplatePath": "Templates\\controller.txt",
+  "APIEndpointTemplatePath": "Templates\\endpoint.txt",
+  "WaitForKey": false
+}
