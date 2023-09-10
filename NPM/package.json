@@ -1,6 +1,6 @@
 {
   "name": "tsbinddotnet",
-  "version": "1.0.6",
+  "version": "1.5.0",
   "description": "https://github.com/pandepic/TSBind.Net",
   "main": "index.js",
   "bin": {

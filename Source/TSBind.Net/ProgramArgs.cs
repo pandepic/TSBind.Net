@@ -14,7 +14,10 @@ public class ProgramArgsConfig
 
 public class ProgramArgs
 {
+    public static string Version = "1.5.0";
+
     public ProgramArgsConfig Config = new();
+    public bool Run = true;
 
     public ProgramArgs(string[] args)
     {
@@ -42,6 +45,12 @@ public class ProgramArgs
 
             switch (currentArgType)
             {
+                case ArgType.Version:
+                case ArgType.V:
+                    Run = false;
+                    Console.WriteLine($"Version: {Version}");
+                    break;
+
                 case ArgType.Input:
                     Config.Inputs.Add(arg);
                     break;

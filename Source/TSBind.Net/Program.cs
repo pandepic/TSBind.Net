@@ -6,7 +6,16 @@ try
 {
 #endif
     var programArgs = new ProgramArgs(args);
-    var configPath = "tsbinddotnet.config.json";
+
+    if (!programArgs.Run)
+    {
+        if (programArgs.Config.WaitForKey ?? false)
+            Console.ReadKey();
+
+        return;
+    }
+
+    var configPath = "tsbinddotnet.json";
 
     if (File.Exists(configPath))
         programArgs.LoadConfigFile(configPath);

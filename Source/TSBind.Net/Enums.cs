@@ -9,6 +9,8 @@ public enum ArgType
     APIControllerTemplate,
     APIEndpointTemplate,
     WaitForKey,
+    Version,
+    V,
 }
 
 public enum AttributeNames
