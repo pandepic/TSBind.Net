@@ -75,6 +75,7 @@ public static class SourceCodeParser
 
     public static StringBuilder GenerateTS(
         List<string> inputs,
+        List<string> includeTypes,
         string generalTemplatePath,
         string apiControllerTemplatePath,
         string apiEndpointTemplatePath)
@@ -90,6 +91,7 @@ public static class SourceCodeParser
         var apiFunctionTemplate = File.ReadAllText(apiEndpointTemplatePath);
 
         var referenceTypeNames = new List<string>();
+        referenceTypeNames.AddRange(includeTypes);
 
         output.AppendLine(generalTemplate);
         output.AppendLine();
@@ -155,6 +157,8 @@ public static class SourceCodeParser
             if (referenceType != referenceTypeNames.Last())
                 output.AppendLine();
         }
+
+        output.AppendLine();
         #endregion
 
         #region Classes

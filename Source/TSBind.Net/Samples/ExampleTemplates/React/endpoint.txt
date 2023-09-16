@@ -1,5 +1,4 @@
 ﻿    // {ENDPOINT_ROUTE}
     public static {ENDPOINT_NAME}(params: {ENDPOINT_PARAM_TYPE_NAME}, callback: ((result: PostResponse<{ENDPOINT_RESPONSE_TYPE_NAME}>) => void) | null = null, errorCallback: ((error: any) => void) | null = null): void {
-        const response = APIService.Post<{ENDPOINT_RESPONSE_TYPE_NAME}>('{ENDPOINT_ROUTE}', params, callback, errorCallback);
-        return response;
+        APIService.Post<{ENDPOINT_RESPONSE_TYPE_NAME}>('{ENDPOINT_ROUTE}', params, callback, errorCallback);
     }

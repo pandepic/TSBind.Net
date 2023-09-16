@@ -11,6 +11,7 @@ public enum ArgType
     WaitForKey,
     Version,
     V,
+    IncludeTypes,
 }
 
 public enum AttributeNames

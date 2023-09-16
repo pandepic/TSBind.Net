@@ -18,19 +18,25 @@ export class APIService {
 
         fetch(apiURL + endpoint, options)
             .then(response => {
-                if (response.status == 200) {
+                if (response.status === 200) {
                     result.success = true;
-                    result.body = response.json() as T;
+
+                    response.json().then(data => {
+                        result.body = data as T;
+
+                        if (callback != null) {
+                            callback(result);
+                        }
+                    });
                 } else {
                     result.success = false;
-                }
 
-                if (callback != null) {
-                    callback(result);
+                    if (callback != null) {
+                        callback(result);
+                    }
                 }
             })
             .catch(error => {
-                //console.error(error);
                 result.success = false;
                 
                 if (errorCallback != null) {

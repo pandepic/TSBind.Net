@@ -6,6 +6,7 @@ public class ProgramArgsConfig
 {
     public List<string> Inputs { get; set; } = new();
     public List<string> Outputs { get; set; } = new();
+    public List<string> IncludeTypes { get; set; } = new();
     public string GeneralTemplatePath { get; set; } = "";
     public string APIControllerTemplatePath { get; set; } = "";
     public string APIEndpointTemplatePath { get; set; } = "";
@@ -78,6 +79,10 @@ public class ProgramArgs
                 case ArgType.WaitForKey:
                     Config.WaitForKey = true;
                     break;
+
+                case ArgType.IncludeTypes:
+                    Config.IncludeTypes.Add(arg);
+                    break;
             }
         }
     }
@@ -100,6 +105,7 @@ public class ProgramArgs
 
             Config.Inputs.AddRange(config.Inputs);
             Config.Outputs.AddRange(config.Outputs);
+            Config.IncludeTypes.AddRange(config.IncludeTypes);
 
             if (config.WaitForKey.HasValue)
                 Config.WaitForKey = config.WaitForKey.Value;

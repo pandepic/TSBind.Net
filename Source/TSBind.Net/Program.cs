@@ -20,7 +20,11 @@ try
     if (File.Exists(configPath))
         programArgs.LoadConfigFile(configPath);
 
-    var errors = ProgramArgsValidator.Validate(programArgs);
+#if DEBUG
+    programArgs.Config.WaitForKey = true;
+#endif
+
+var errors = ProgramArgsValidator.Validate(programArgs);
 
     foreach (var error in errors)
         Console.WriteLine($"ERROR: {error}");
@@ -37,6 +41,7 @@ try
     {
         var outputBuilder = SourceCodeParser.GenerateTS(
             programArgs.Config.Inputs,
+            programArgs.Config.IncludeTypes,
             programArgs.Config.GeneralTemplatePath,
             programArgs.Config.APIControllerTemplatePath,
             programArgs.Config.APIEndpointTemplatePath);
@@ -57,7 +62,7 @@ try
     Console.WriteLine("Done! Press any key to exit.");
 
     if (programArgs.Config.WaitForKey ?? false)
-        Console.ReadKey();
+            Console.ReadKey();
 
 #if !DEBUG
 }
