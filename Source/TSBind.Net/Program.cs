@@ -9,7 +9,7 @@ try
 
     if (!programArgs.Run)
     {
-        if (programArgs.Config.WaitForKey ?? false)
+        if (programArgs.FirstConfig.WaitForKey ?? false)
             Console.ReadKey();
 
         return;
@@ -21,17 +21,17 @@ try
         programArgs.LoadConfigFile(configPath);
 
 #if DEBUG
-    programArgs.Config.WaitForKey = true;
+    programArgs.FirstConfig.WaitForKey = true;
 #endif
 
-var errors = ProgramArgsValidator.Validate(programArgs);
+    var errors = ProgramArgsValidator.Validate(programArgs);
 
     foreach (var error in errors)
         Console.WriteLine($"ERROR: {error}");
 
     if (errors.Count > 0)
     {
-        if (programArgs.Config.WaitForKey ?? false)
+        if (programArgs.FirstConfig.WaitForKey ?? false)
             Console.ReadKey();
 
         return;
@@ -39,21 +39,27 @@ var errors = ProgramArgsValidator.Validate(programArgs);
 
     try
     {
-        var outputBuilder = SourceCodeParser.GenerateTS(
-            programArgs.Config.Inputs,
-            programArgs.Config.IncludeTypes,
-            programArgs.Config.GeneralTemplatePath,
-            programArgs.Config.APIControllerTemplatePath,
-            programArgs.Config.APIEndpointTemplatePath);
+        foreach (var config in programArgs.Configs)
+        {
+            var outputBuilder = SourceCodeParser.GenerateTS(
+                config.Inputs,
+                config.IncludeTypes,
+                config.GeneralTemplatePath,
+                config.APIControllerTemplatePath,
+                config.APIEndpointTemplatePath);
 
-        foreach (var output in programArgs.Config.Outputs)
-            File.WriteAllText(output, outputBuilder.ToString());
+            foreach (var output in config.Outputs)
+            {
+                File.WriteAllText(output, outputBuilder.ToString());
+                Console.WriteLine($"Successfully wrote output to {output}");
+            }
+        }
     }
     catch (Exception ex)
     {
         Console.WriteLine($"ERROR: {ex.Message}");
 
-        if (programArgs.Config.WaitForKey ?? false)
+        if (programArgs.FirstConfig.WaitForKey ?? false)
             Console.ReadKey();
 
         return;
@@ -61,8 +67,8 @@ var errors = ProgramArgsValidator.Validate(programArgs);
 
     Console.WriteLine("Done! Press any key to exit.");
 
-    if (programArgs.Config.WaitForKey ?? false)
-            Console.ReadKey();
+    if (programArgs.FirstConfig.WaitForKey ?? false)
+        Console.ReadKey();
 
 #if !DEBUG
 }

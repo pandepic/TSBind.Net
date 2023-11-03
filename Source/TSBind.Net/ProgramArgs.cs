@@ -15,15 +15,17 @@ public class ProgramArgsConfig
 
 public class ProgramArgs
 {
-    public static string Version = "1.7.1";
+    public static string Version = "1.9.1";
 
-    public ProgramArgsConfig Config = new();
+    public ProgramArgsConfig FirstConfig => Configs[0];
+    
+    public List<ProgramArgsConfig> Configs = new() { new() };
     public bool Run = true;
 
     public ProgramArgs(string[] args)
     {
 #if DEBUG
-        Config.WaitForKey = true;
+        FirstConfig.WaitForKey = true;
 #endif
 
         var currentArgType = ArgType.Unknown;
@@ -57,58 +59,70 @@ public class ProgramArgs
             switch (currentArgType)
             {
                 case ArgType.Input:
-                    Config.Inputs.Add(arg);
+                    FirstConfig.Inputs.Add(arg);
                     break;
 
                 case ArgType.Output:
-                    Config.Outputs.Add(arg);
+                    FirstConfig.Outputs.Add(arg);
                     break;
 
                 case ArgType.GeneralTemplate:
-                    Config.GeneralTemplatePath = arg;
+                    FirstConfig.GeneralTemplatePath = arg;
                     break;
 
                 case ArgType.APIControllerTemplate:
-                    Config.APIControllerTemplatePath = arg;
+                    FirstConfig.APIControllerTemplatePath = arg;
                     break;
 
                 case ArgType.APIEndpointTemplate:
-                    Config.APIEndpointTemplatePath = arg;
+                    FirstConfig.APIEndpointTemplatePath = arg;
                     break;
 
                 case ArgType.WaitForKey:
-                    Config.WaitForKey = true;
+                    FirstConfig.WaitForKey = true;
                     break;
 
                 case ArgType.IncludeTypes:
-                    Config.IncludeTypes.Add(arg);
+                    FirstConfig.IncludeTypes.Add(arg);
                     break;
             }
         }
     }
 
-    public void LoadConfigFile(string filename)
+    public void LoadConfigFile(string path)
     {
-        Console.WriteLine($"Loading config from: {filename}");
+        Console.WriteLine($"Loading config from: {path}");
 
-        var configString = File.ReadAllText(filename);
-        var config = JsonSerializer.Deserialize<ProgramArgsConfig>(configString);
+        var configString = File.ReadAllText(path);
+        var configs = JsonSerializer.Deserialize<List<ProgramArgsConfig>>(configString);
 
-        if (config != null)
+        if (configs == null || configs.Count == 0)
+            return;
+
+        for (var i = 0; i < configs.Count; i++)
         {
-            if (!string.IsNullOrEmpty(config.GeneralTemplatePath))
-                Config.GeneralTemplatePath = config.GeneralTemplatePath;
-            if (!string.IsNullOrEmpty(config.APIControllerTemplatePath))
-                Config.APIControllerTemplatePath = config.APIControllerTemplatePath;
-            if (!string.IsNullOrEmpty(config.APIEndpointTemplatePath))
-                Config.APIEndpointTemplatePath = config.APIEndpointTemplatePath;
+            var config = configs[i];
+            
+            if (i == 0)
+            {
+                if (!string.IsNullOrEmpty(config.GeneralTemplatePath))
+                    FirstConfig.GeneralTemplatePath = config.GeneralTemplatePath;
+                if (!string.IsNullOrEmpty(config.APIControllerTemplatePath))
+                    FirstConfig.APIControllerTemplatePath = config.APIControllerTemplatePath;
+                if (!string.IsNullOrEmpty(config.APIEndpointTemplatePath))
+                    FirstConfig.APIEndpointTemplatePath = config.APIEndpointTemplatePath;
 
-            Config.Inputs.AddRange(config.Inputs);
-            Config.Outputs.AddRange(config.Outputs);
-            Config.IncludeTypes.AddRange(config.IncludeTypes);
+                FirstConfig.Inputs.AddRange(config.Inputs);
+                FirstConfig.Outputs.AddRange(config.Outputs);
+                FirstConfig.IncludeTypes.AddRange(config.IncludeTypes);
 
-            if (config.WaitForKey.HasValue)
-                Config.WaitForKey = config.WaitForKey.Value;
+                if (config.WaitForKey.HasValue)
+                    FirstConfig.WaitForKey = config.WaitForKey.Value;
+            }
+            else
+            {
+                Configs.Add(config);
+            }
         }
     }
 }

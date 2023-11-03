@@ -10,6 +10,9 @@ public static class SourceCodeParser
         typeName = StripGenericType(typeName, "Task");
         typeName = StripGenericType(typeName, "ActionResult");
 
+        // strip out non generic ActionResult
+        typeName = typeName.Replace("ActionResult", "void");
+
         return typeName;
     }
 
@@ -68,7 +71,7 @@ public static class SourceCodeParser
         typeName = typeName.Replace("bool", "boolean");
 
         if (typeName.EndsWith("?"))
-            typeName = typeName.Substring(0, typeName.Length - 1);
+            typeName = typeName[..^1];
 
         return typeName;
     }
@@ -92,9 +95,6 @@ public static class SourceCodeParser
 
         var referenceTypeNames = new List<string>();
         referenceTypeNames.AddRange(includeTypes);
-
-        output.AppendLine(generalTemplate);
-        output.AppendLine();
 
         foreach (var input in inputs)
             projectInputs.Add(new(input));
@@ -139,6 +139,8 @@ public static class SourceCodeParser
                 referenceTypeNames.RemoveAt(i);
         }
 
+        var typesOutput = new StringBuilder();
+
         #region Enums
         foreach (var referenceType in referenceTypeNames)
         {
@@ -147,18 +149,20 @@ public static class SourceCodeParser
             if (enumType == null)
                 continue;
 
-            output.AppendLine($"export enum {enumType.Name} {{");
+            typesOutput.AppendLine($"export enum {enumType.Name} {{");
 
             foreach (var member in enumType.Members)
-                output.AppendLine($"\t{member.Name} = {member.Value},");
+                typesOutput.AppendLine($"\t{member.Name} = {member.Value},");
 
-            output.AppendLine("}");
+            typesOutput.AppendLine("}");
 
             if (referenceType != referenceTypeNames.Last())
-                output.AppendLine();
+                typesOutput.AppendLine();
+
+            Console.WriteLine($"Generated enum {enumType.Name}");
         }
 
-        output.AppendLine();
+        typesOutput.AppendLine();
         #endregion
 
         #region Classes
@@ -168,20 +172,22 @@ public static class SourceCodeParser
             if (classType == null)
                 continue;
 
-            output.AppendLine($"export class {classType.Name} {{");
+            typesOutput.AppendLine($"export class {classType.Name} {{");
 
             foreach (var property in classType.Properties)
-                output.AppendLine($"\tpublic {property.Name}?: {TransformTypeName(property.TypeName)};");
+                typesOutput.AppendLine($"\tpublic {property.Name}?: {TransformTypeName(property.TypeName)};");
 
-            output.AppendLine("}");
+            typesOutput.AppendLine("}");
 
             if (referenceType != referenceTypeNames.Last())
-                output.AppendLine();
+                typesOutput.AppendLine();
+
+            Console.WriteLine($"Generated class {classType.Name}");
         }
         #endregion
 
-        output.AppendLine();
-
+        var controllersOutput = new StringBuilder();
+        
         foreach (var controller in apiControllers)
         {
             var controllerShortName = controller.Name;
@@ -196,6 +202,7 @@ public static class SourceCodeParser
             controllerRouteString = controllerRouteString.Replace("[controller]", controllerShortName);
 
             var functionsOutput = new StringBuilder();
+            var endpointsGenerated = 0;
 
             foreach (var method in controller.ClassMethods)
             {
@@ -216,6 +223,8 @@ public static class SourceCodeParser
 
                 if (method != controller.ClassMethods.Last())
                     functionsOutput.AppendLine();
+
+                endpointsGenerated++;
             }
 
             var functionsString = functionsOutput.ToString();
@@ -224,13 +233,20 @@ public static class SourceCodeParser
             if (functionsString.EndsWith(Environment.NewLine))
                 functionsString = functionsString.Substring(0, functionsString.Length - Environment.NewLine.Length);
 
-            output.AppendLine(apiControllerTemplate
+            controllersOutput.AppendLine(apiControllerTemplate
                 .Replace("{CONTROLLER_SHORT_NAME}", controllerShortName)
                 .Replace("{API_FUNCTIONS}", functionsString));
 
             if (controller != apiControllers.Last())
-                output.AppendLine();
+                controllersOutput.AppendLine();
+
+            Console.WriteLine($"Generated controller {controllerShortName} with {endpointsGenerated} endpoints");
         }
+        
+        output.AppendLine(
+            generalTemplate
+                .Replace("{OUTPUT_TYPES}", typesOutput.ToString())
+                .Replace("{OUTPUT_CONTROLLERS}", controllersOutput.ToString()));
 
         return output;
     }
