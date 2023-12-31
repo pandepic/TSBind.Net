@@ -2,7 +2,7 @@
 
 namespace TSBindDotNet;
 
-public class SourceFileClassMethod
+public class SourceFileTypeMethod
 {
     public string Name;
     public string ReturnTypeName;
@@ -11,7 +11,7 @@ public class SourceFileClassMethod
     public List<SourceFileAttribute> Attributes = new();
     public List<string> ParameterTypes = new();
 
-    public SourceFileClassMethod(MethodDeclarationSyntax declaration)
+    public SourceFileTypeMethod(MethodDeclarationSyntax declaration)
     {
         MethodDeclaration = declaration;
         Name = MethodDeclaration.Identifier.ValueText;

@@ -1,11 +1,11 @@
 ﻿namespace TSBindDotNet;
 
-public class SourceFileClassProperty
+public class SourceFileTypeProperty
 {
     public string Name;
     public string TypeName;
 
-    public SourceFileClassProperty(string name, string typeName)
+    public SourceFileTypeProperty(string name, string typeName)
     {
         Name = name;
         TypeName = typeName;

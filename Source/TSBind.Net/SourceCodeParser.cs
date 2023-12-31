@@ -29,13 +29,14 @@ public static class SourceCodeParser
         return str;
     }
 
-    public static SourceFileClass? FindClass(List<ProjectInput> projectInputs, string name)
+    public static SourceFileType? FindType(List<ProjectInput> projectInputs, string name)
     {
         foreach (var projectInput in projectInputs)
         {
-            var sourceClass = projectInput.SourceClasses.Where(c => c.Name == name).FirstOrDefault();
-            if (sourceClass != null)
-                return sourceClass;
+            var sourceType = projectInput.SourceTypes.Where(c => c.Name == name).FirstOrDefault();
+            
+            if (sourceType != null)
+                return sourceType;
         }
 
         return null;
@@ -46,6 +47,7 @@ public static class SourceCodeParser
         foreach (var projectInput in projectInputs)
         {
             var sourceEnum = projectInput.SourceEnums.Where(c => c.Name == name).FirstOrDefault();
+
             if (sourceEnum != null)
                 return sourceEnum;
         }
@@ -53,12 +55,12 @@ public static class SourceCodeParser
         return null;
     }
 
-    public static void FindReferenceTypes(SourceFileClass sourceClass, List<string> referenceTypeNames)
+    public static void FindReferenceTypes(SourceFileType sourceType, List<string> referenceTypeNames)
     {
-        foreach (var field in sourceClass.Fields)
+        foreach (var field in sourceType.Fields)
             referenceTypeNames.AddIfNotContains(field.TypeName);
 
-        foreach (var property in sourceClass.Properties)
+        foreach (var property in sourceType.Properties)
             referenceTypeNames.AddIfNotContains(property.TypeName);
     }
 
@@ -99,17 +101,17 @@ public static class SourceCodeParser
         foreach (var input in inputs)
             projectInputs.Add(new(input));
 
-        var apiControllers = new List<SourceFileClass>();
+        var apiControllers = new List<SourceFileType>();
 
         foreach (var projectInput in projectInputs)
         {
-            apiControllers.AddRange(projectInput.SourceClasses
+            apiControllers.AddRange(projectInput.SourceTypes
                 .Where(c => c.Attributes.Where(a => a.Name == AttributeNames.ApiController.ToString()).Any()));
         }
 
         foreach (var controller in apiControllers)
         {
-            foreach (var method in controller.ClassMethods)
+            foreach (var method in controller.Methods)
             {
                 referenceTypeNames.AddIfNotContains(StripReturnTypeName(method.ReturnTypeName));
 
@@ -122,7 +124,7 @@ public static class SourceCodeParser
 
         foreach (var referenceType in referenceTypeNames)
         {
-            var sourceClass = FindClass(projectInputs, referenceType);
+            var sourceClass = FindType(projectInputs, referenceType);
             if (sourceClass != null)
                 FindReferenceTypes(sourceClass, addReferenceTypes);
         }
@@ -132,7 +134,7 @@ public static class SourceCodeParser
         for (var i = referenceTypeNames.Count - 1; i >= 0; i--)
         {
             var referenceType = referenceTypeNames[i];
-            var classType = FindClass(projectInputs, referenceType);
+            var classType = FindType(projectInputs, referenceType);
             var enumType = FindEnum(projectInputs, referenceType);
 
             if (classType == null && enumType == null)
@@ -168,7 +170,7 @@ public static class SourceCodeParser
         #region Classes
         foreach (var referenceType in referenceTypeNames)
         {
-            var classType = FindClass(projectInputs, referenceType);
+            var classType = FindType(projectInputs, referenceType);
             if (classType == null)
                 continue;
 
@@ -204,7 +206,7 @@ public static class SourceCodeParser
             var functionsOutput = new StringBuilder();
             var endpointsGenerated = 0;
 
-            foreach (var method in controller.ClassMethods)
+            foreach (var method in controller.Methods)
             {
                 if (method.ParameterTypes.Count == 0)
                     continue;
@@ -221,7 +223,7 @@ public static class SourceCodeParser
                     .Replace("{ENDPOINT_PARAM_TYPE_NAME}", method.ParameterTypes[0])
                     .Replace("{ENDPOINT_RESPONSE_TYPE_NAME}", StripReturnTypeName(method.ReturnTypeName)));
 
-                if (method != controller.ClassMethods.Last())
+                if (method != controller.Methods.Last())
                     functionsOutput.AppendLine();
 
                 endpointsGenerated++;

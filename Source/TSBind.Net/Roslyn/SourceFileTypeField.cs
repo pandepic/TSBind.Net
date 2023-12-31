@@ -1,11 +1,11 @@
 ﻿namespace TSBindDotNet;
 
-public class SourceFileClassField
+public class SourceFileTypeField
 {
     public string Name;
     public string TypeName;
 
-    public SourceFileClassField(string name, string typeName)
+    public SourceFileTypeField(string name, string typeName)
     {
         Name = name;
         TypeName = typeName;

@@ -11,7 +11,7 @@ public class ProjectInput
 
     public List<FileInfo> SourceFiles = new();
 
-    public List<SourceFileClass> SourceClasses = new();
+    public List<SourceFileType> SourceTypes = new();
     public List<SourceFileEnum> SourceEnums = new();
 
     public ProjectInput(string path)
@@ -30,7 +30,7 @@ public class ProjectInput
 
     public void Parse()
     {
-        SourceClasses.Clear();
+        SourceTypes.Clear();
         SourceEnums.Clear();
 
         foreach (var file in SourceFiles)
@@ -41,7 +41,10 @@ public class ProjectInput
             var root = tree.GetCompilationUnitRoot();
 
             foreach (var classDeclaration in root.DescendantNodes().OfType<ClassDeclarationSyntax>())
-                SourceClasses.Add(new(file, classDeclaration));
+                SourceTypes.Add(new SourceFileClass(file, classDeclaration));
+
+            foreach (var recordDeclaration in root.DescendantNodes().OfType<RecordDeclarationSyntax>())
+                SourceTypes.Add(new SourceFileRecord(file, recordDeclaration));
 
             foreach (var enumDeclaration in root.DescendantNodes().OfType<EnumDeclarationSyntax>())
                 SourceEnums.Add(new(file, enumDeclaration));
