@@ -48,6 +48,24 @@ public class ProjectInput
 
             foreach (var enumDeclaration in root.DescendantNodes().OfType<EnumDeclarationSyntax>())
                 SourceEnums.Add(new(file, enumDeclaration));
+
+            foreach (var sourceType in SourceTypes)
+            {
+                foreach (var baseTypeName in sourceType.BaseTypes)
+                {
+                    var baseType = SourceTypes.Where(s => s.Name ==  baseTypeName).FirstOrDefault();
+                    if (baseType == null)
+                        continue;
+
+                    foreach (var baseTypeProperty in baseType.Properties)
+                    {
+                        if (sourceType.Properties.Where(p => p.Name == baseTypeProperty.Name).Any())
+                            continue;
+
+                        sourceType.Properties.Add(baseTypeProperty);
+                    }
+                }
+            }
         }
     }
 }

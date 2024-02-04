@@ -1,10 +1,13 @@
 ﻿using System.Data;
 using System.Text;
+using System.Xml.Linq;
 
 namespace TSBindDotNet;
 
 public static class SourceCodeParser
 {
+    private static StringBuilder _typeNameBuilder = new();
+
     public static string StripReturnTypeName(string typeName)
     {
         typeName = StripGenericType(typeName, "Task");
@@ -58,10 +61,44 @@ public static class SourceCodeParser
     public static void FindReferenceTypes(SourceFileType sourceType, List<string> referenceTypeNames)
     {
         foreach (var field in sourceType.Fields)
-            referenceTypeNames.AddIfNotContains(field.TypeName);
+            AddReferenceTypeNames(field.TypeName, referenceTypeNames);
 
         foreach (var property in sourceType.Properties)
-            referenceTypeNames.AddIfNotContains(property.TypeName);
+            AddReferenceTypeNames(property.TypeName, referenceTypeNames);
+    }
+
+    private static void AddReferenceTypeNames(string input, List<string> referenceTypeNames)
+    {
+        if (!input.Contains("<"))
+        {
+            referenceTypeNames.AddIfNotContains(input);
+            return;
+        }
+
+        _typeNameBuilder.Clear();
+
+        foreach (var character in input)
+        {
+            if (character == '<')
+            {
+                referenceTypeNames.AddIfNotContains(_typeNameBuilder.ToString().Trim());
+                _typeNameBuilder.Clear();
+            }
+            else if (character == '>')
+            {
+                referenceTypeNames.AddIfNotContains(_typeNameBuilder.ToString().Trim());
+                _typeNameBuilder.Clear();
+            }
+            else if (character == ',')
+            {
+                referenceTypeNames.AddIfNotContains(_typeNameBuilder.ToString().Trim());
+                _typeNameBuilder.Clear();
+            }
+            else
+            {
+                _typeNameBuilder.Append(character);
+            }
+        }
     }
 
     public static string TransformTypeName(string typeName)
@@ -174,7 +211,18 @@ public static class SourceCodeParser
             if (classType == null)
                 continue;
 
-            typesOutput.AppendLine($"export class {classType.Name} {{");
+            var outputClassName = classType.Name;
+
+            if (classType.TypeDeclaration.TypeParameterList != null
+                && classType.TypeDeclaration.TypeParameterList.Parameters.Count > 0)
+            {
+                var genericTypes = classType.TypeDeclaration.TypeParameterList.Parameters
+                    .Select(p => p.Identifier.ValueText);
+
+                outputClassName += $"<{string.Join(",", genericTypes)}>";
+            }
+
+            typesOutput.AppendLine($"export class {outputClassName} {{");
 
             foreach (var property in classType.Properties)
                 typesOutput.AppendLine($"\tpublic {property.Name}?: {TransformTypeName(property.TypeName)};");

@@ -8,6 +8,7 @@ public abstract class SourceFileType
 
     public FileInfo SourceFile;
     public string Name;
+    public List<string> BaseTypes = new();
 
     public List<SourceFileTypeMethod> Methods = new();
     public List<SourceFileAttribute> Attributes = new();
@@ -41,6 +42,13 @@ public abstract class SourceFileType
             var name = propertyDeclaration.Identifier.ValueText;
             var type = propertyDeclaration.Type.ToString();
             Properties.Add(new(name, type));
+        }
+
+        if (TypeDeclaration.BaseList != null
+            && TypeDeclaration.BaseList.Types.Count > 0)
+        {
+            foreach (var baseType in TypeDeclaration.BaseList.Types)
+                BaseTypes.AddIfNotContains(baseType.Type.ToString());
         }
     }
 
