@@ -108,6 +108,7 @@ public static class SourceCodeParser
         typeName = typeName.Replace("float", "number");
         typeName = typeName.Replace("decimal", "number");
         typeName = typeName.Replace("bool", "boolean");
+        typeName = typeName.Replace("DateTime", "Date");
 
         if (typeName.EndsWith("?"))
             typeName = typeName[..^1];
